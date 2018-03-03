@@ -9,7 +9,8 @@ contract ERC223ContractInterface {
 contract ERC223TokenMock is BasicToken {
 
   function ERC223TokenMock(address initialAccount, uint256 initialBalance) public {
-    balances[initialAccount] = initialBalance;
+    balances = new BalanceSheet();
+    balances.setBalance(initialAccount, initialBalance);
     totalSupply_ = initialBalance;
   }
 

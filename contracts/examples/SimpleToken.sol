@@ -23,7 +23,9 @@ contract SimpleToken is StandardToken {
    */
   function SimpleToken() public {
     totalSupply_ = INITIAL_SUPPLY;
-    balances[msg.sender] = INITIAL_SUPPLY;
+    balances = new BalanceSheet();
+    allowances = new AllowanceSheet();
+    balances.setBalance(msg.sender, INITIAL_SUPPLY);
     Transfer(0x0, msg.sender, INITIAL_SUPPLY);
   }
 

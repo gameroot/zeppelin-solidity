@@ -8,7 +8,8 @@ import "../token/ERC20/BasicToken.sol";
 contract BasicTokenMock is BasicToken {
 
   function BasicTokenMock(address initialAccount, uint256 initialBalance) public {
-    balances[initialAccount] = initialBalance;
+    balances = new BalanceSheet();
+    balances.setBalance(initialAccount, initialBalance);
     totalSupply_ = initialBalance;
   }
 

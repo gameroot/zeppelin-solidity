@@ -6,7 +6,9 @@ import "../token/ERC20/StandardToken.sol";
 contract StandardTokenMock is StandardToken {
 
   function StandardTokenMock(address initialAccount, uint256 initialBalance) public {
-    balances[initialAccount] = initialBalance;
+    balances = new BalanceSheet();
+    allowances = new AllowanceSheet();
+    balances.setBalance(initialAccount, initialBalance);
     totalSupply_ = initialBalance;
   }
 

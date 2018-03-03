@@ -3,18 +3,24 @@ pragma solidity ^0.4.18;
 
 import "./ERC20Basic.sol";
 import "../../math/SafeMath.sol";
+import "./BalanceSheet.sol";
 
 
 /**
  * @title Basic token
  * @dev Basic version of StandardToken, with no allowances.
  */
-contract BasicToken is ERC20Basic {
+contract BasicToken is ERC20Basic, Claimable {
   using SafeMath for uint256;
 
-  mapping(address => uint256) balances;
+  BalanceSheet balances;
 
   uint256 totalSupply_;
+
+  function setBalanceSheet(address sheet) external onlyOwner {
+    balances = BalanceSheet(sheet);
+    balances.claimOwnership();
+  }
 
   /**
   * @dev total number of tokens in existence
@@ -29,14 +35,19 @@ contract BasicToken is ERC20Basic {
   * @param _value The amount to be transferred.
   */
   function transfer(address _to, uint256 _value) public returns (bool) {
+    transferAllArgsNoAllowance(msg.sender, _to, _value);
+    return true;
+  }
+
+  function transferAllArgsNoAllowance(address _from, address _to, uint256 _value) internal {
     require(_to != address(0));
-    require(_value <= balances[msg.sender]);
+    require(_from != address(0));
+    require(_value <= balances.balanceOf(_from));
 
     // SafeMath.sub will throw if there is not enough balance.
-    balances[msg.sender] = balances[msg.sender].sub(_value);
-    balances[_to] = balances[_to].add(_value);
-    Transfer(msg.sender, _to, _value);
-    return true;
+    balances.subBalance(_from, _value);
+    balances.addBalance(_to, _value);
+    Transfer(_from, _to, _value);
   }
 
   /**
@@ -45,7 +56,15 @@ contract BasicToken is ERC20Basic {
   * @return An uint256 representing the amount owned by the passed address.
   */
   function balanceOf(address _owner) public view returns (uint256 balance) {
-    return balances[_owner];
+    return balances.balanceOf(_owner);
   }
 
+  // Identical to HasNoContracts (https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/ownership/HasNoContracts.sol)
+  // but inheriting from that would be misleading because this contract *is*
+  // supposed to own BalanceSheet and AllowanceSheet; it's just *also* supposed
+  // to be able to relinquish them.
+  function reclaimContract(address contractAddr) external onlyOwner {
+    Ownable contractInst = Ownable(contractAddr);
+    contractInst.transferOwnership(owner);
+  }
 }

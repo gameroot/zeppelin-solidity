@@ -7,7 +7,9 @@ import "../token/ERC20/PausableToken.sol";
 contract PausableTokenMock is PausableToken {
 
   function PausableTokenMock(address initialAccount, uint initialBalance) public {
-    balances[initialAccount] = initialBalance;
+    balances = new BalanceSheet();
+    allowances = new AllowanceSheet();
+    balances.setBalance(initialAccount, initialBalance);
   }
 
 }

@@ -2,6 +2,7 @@ pragma solidity ^0.4.18;
 
 import "./BasicToken.sol";
 import "./ERC20.sol";
+import "./AllowanceSheet.sol";
 
 
 /**
@@ -13,8 +14,12 @@ import "./ERC20.sol";
  */
 contract StandardToken is ERC20, BasicToken {
 
-  mapping (address => mapping (address => uint256)) internal allowed;
+  AllowanceSheet allowances;
 
+  function setAllowanceSheet(address sheet) external onlyOwner {
+    allowances = AllowanceSheet(sheet);
+    allowances.claimOwnership();
+  }
 
   /**
    * @dev Transfer tokens from one address to another
@@ -23,15 +28,15 @@ contract StandardToken is ERC20, BasicToken {
    * @param _value uint256 the amount of tokens to be transferred
    */
   function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-    require(_to != address(0));
-    require(_value <= balances[_from]);
-    require(_value <= allowed[_from][msg.sender]);
-
-    balances[_from] = balances[_from].sub(_value);
-    balances[_to] = balances[_to].add(_value);
-    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-    Transfer(_from, _to, _value);
+    transferAllArgsYesAllowance(_from, _to, _value, msg.sender);
     return true;
+  }
+
+  function transferAllArgsYesAllowance(address _from, address _to, uint256 _value, address spender) internal {
+    require(_value <= allowances.allowanceOf(_from, spender));
+
+    allowances.subAllowance(_from, spender, _value);
+    transferAllArgsNoAllowance(_from, _to, _value);
   }
 
   /**
@@ -45,9 +50,13 @@ contract StandardToken is ERC20, BasicToken {
    * @param _value The amount of tokens to be spent.
    */
   function approve(address _spender, uint256 _value) public returns (bool) {
-    allowed[msg.sender][_spender] = _value;
-    Approval(msg.sender, _spender, _value);
+    approveAllArgs(_spender, _value, msg.sender);
     return true;
+  }
+
+  function approveAllArgs(address _spender, uint256 _value, address _tokenHolder) internal {
+    allowances.setAllowance(_tokenHolder, _spender, _value);
+    Approval(_tokenHolder, _spender, _value);
   }
 
   /**
@@ -57,7 +66,7 @@ contract StandardToken is ERC20, BasicToken {
    * @return A uint256 specifying the amount of tokens still available for the spender.
    */
   function allowance(address _owner, address _spender) public view returns (uint256) {
-    return allowed[_owner][_spender];
+    return allowances.allowanceOf(_owner, _spender);
   }
 
   /**
@@ -71,9 +80,13 @@ contract StandardToken is ERC20, BasicToken {
    * @param _addedValue The amount of tokens to increase the allowance by.
    */
   function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
-    allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
-    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    increaseApprovalAllArgs(_spender, _addedValue, msg.sender);
     return true;
+  }
+
+  function increaseApprovalAllArgs(address _spender, uint _addedValue, address tokenHolder) internal {
+    allowances.addAllowance(tokenHolder, _spender, _addedValue);
+    Approval(tokenHolder, _spender, allowances.allowanceOf(tokenHolder, _spender));
   }
 
   /**
@@ -87,14 +100,18 @@ contract StandardToken is ERC20, BasicToken {
    * @param _subtractedValue The amount of tokens to decrease the allowance by.
    */
   function decreaseApproval(address _spender, uint _subtractedValue) public returns (bool) {
-    uint oldValue = allowed[msg.sender][_spender];
-    if (_subtractedValue > oldValue) {
-      allowed[msg.sender][_spender] = 0;
-    } else {
-      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
-    }
-    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    decreaseApprovalAllArgs(_spender, _subtractedValue, msg.sender);
     return true;
+  }
+
+  function decreaseApprovalAllArgs(address _spender, uint _subtractedValue, address tokenHolder) internal {
+    uint oldValue = allowances.allowanceOf(tokenHolder, _spender);
+    if (_subtractedValue > oldValue) {
+      allowances.setAllowance(tokenHolder, _spender, 0);
+    } else {
+      allowances.subAllowance(tokenHolder, _spender, _subtractedValue);
+    }
+    Approval(tokenHolder, _spender, allowances.allowanceOf(tokenHolder, _spender));
   }
 
 }
