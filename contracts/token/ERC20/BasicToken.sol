@@ -17,7 +17,7 @@ import "./BalanceSheet.sol";
 contract BasicToken is ERC20Basic, Claimable {
   using SafeMath for uint256;
 
-  BalanceSheet balances;
+  BalanceSheet public balances;
 
   uint256 totalSupply_;
 

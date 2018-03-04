@@ -14,7 +14,7 @@ import "./AllowanceSheet.sol";
  */
 contract StandardToken is ERC20, BasicToken {
 
-  AllowanceSheet allowances;
+  AllowanceSheet public allowances;
 
   function setAllowanceSheet(address sheet) external onlyOwner {
     allowances = AllowanceSheet(sheet);
