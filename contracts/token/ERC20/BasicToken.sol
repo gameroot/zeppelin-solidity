@@ -6,6 +6,10 @@ import "../../math/SafeMath.sol";
 import "./BalanceSheet.sol";
 
 
+// Version of OpenZeppelin's BasicToken whose balances mapping has been replaced
+// with a separate BalanceSheet contract. Most useful in combination with e.g.
+// HasNoContracts because then it can relinquish its balance sheet to a new
+// version of the token, removing the need to copy over balances.
 /**
  * @title Basic token
  * @dev Basic version of StandardToken, with no allowances.
@@ -57,14 +61,5 @@ contract BasicToken is ERC20Basic, Claimable {
   */
   function balanceOf(address _owner) public view returns (uint256 balance) {
     return balances.balanceOf(_owner);
-  }
-
-  // Identical to HasNoContracts (https://github.com/OpenZeppelin/zeppelin-solidity/blob/master/contracts/ownership/HasNoContracts.sol)
-  // but inheriting from that would be misleading because this contract *is*
-  // supposed to own BalanceSheet and AllowanceSheet; it's just *also* supposed
-  // to be able to relinquish them.
-  function reclaimContract(address contractAddr) external onlyOwner {
-    Ownable contractInst = Ownable(contractAddr);
-    contractInst.transferOwnership(owner);
   }
 }
