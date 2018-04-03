@@ -16,11 +16,14 @@ contract BurnableToken is BasicToken {
    * @param _value The amount of token to be burned.
    */
   function burn(uint256 _value) public {
-    require(_value <= balances.balanceOf(msg.sender));
+    burnAllArgs(msg.sender, _value);
+  }
+
+  function burnAllArgs(address burner, uint256 _value) internal {
+    require(_value <= balances.balanceOf(burner));
     // no need to require value <= totalSupply, since that would imply the
     // sender's balance is greater than the totalSupply, which *should* be an assertion failure
 
-    address burner = msg.sender;
     balances.subBalance(burner, _value);
     totalSupply_ = totalSupply_.sub(_value);
     Burn(burner, _value);
