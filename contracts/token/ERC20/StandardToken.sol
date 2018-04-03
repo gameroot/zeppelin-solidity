@@ -84,7 +84,7 @@ contract StandardToken is ERC20, BasicToken {
     return true;
   }
 
-  function increaseApprovalAllArgs(address _spender, uint _addedValue, address tokenHolder) internal {
+  function increaseApprovalAllArgs(address _spender, uint256 _addedValue, address tokenHolder) internal {
     allowances.addAllowance(tokenHolder, _spender, _addedValue);
     Approval(tokenHolder, _spender, allowances.allowanceOf(tokenHolder, _spender));
   }
@@ -104,8 +104,8 @@ contract StandardToken is ERC20, BasicToken {
     return true;
   }
 
-  function decreaseApprovalAllArgs(address _spender, uint _subtractedValue, address tokenHolder) internal {
-    uint oldValue = allowances.allowanceOf(tokenHolder, _spender);
+  function decreaseApprovalAllArgs(address _spender, uint256 _subtractedValue, address tokenHolder) internal {
+    uint256 oldValue = allowances.allowanceOf(tokenHolder, _spender);
     if (_subtractedValue > oldValue) {
       allowances.setAllowance(tokenHolder, _spender, 0);
     } else {
