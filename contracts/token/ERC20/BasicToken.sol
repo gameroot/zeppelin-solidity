@@ -39,11 +39,11 @@ contract BasicToken is ERC20Basic, Claimable {
   * @param _value The amount to be transferred.
   */
   function transfer(address _to, uint256 _value) public returns (bool) {
-    transferAllArgsNoAllowance(msg.sender, _to, _value);
+    transferAllArgs(msg.sender, _to, _value);
     return true;
   }
 
-  function transferAllArgsNoAllowance(address _from, address _to, uint256 _value) internal {
+  function transferAllArgs(address _from, address _to, uint256 _value) internal {
     require(_to != address(0));
     require(_from != address(0));
     require(_value <= balances.balanceOf(_from));

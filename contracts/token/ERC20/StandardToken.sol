@@ -28,15 +28,15 @@ contract StandardToken is ERC20, BasicToken {
    * @param _value uint256 the amount of tokens to be transferred
    */
   function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-    transferAllArgsYesAllowance(_from, _to, _value, msg.sender);
+    transferFromAllArgs(_from, _to, _value, msg.sender);
     return true;
   }
 
-  function transferAllArgsYesAllowance(address _from, address _to, uint256 _value, address spender) internal {
+  function transferFromAllArgs(address _from, address _to, uint256 _value, address spender) internal {
     require(_value <= allowances.allowanceOf(_from, spender));
 
     allowances.subAllowance(_from, spender, _value);
-    transferAllArgsNoAllowance(_from, _to, _value);
+    transferAllArgs(_from, _to, _value);
   }
 
   /**
